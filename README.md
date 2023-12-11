@@ -1,2 +1,2 @@
-# website bookmarking extension
- creating a extension which allows users to boomark websites to the web application and to manage it on website 
+# Website bookmarking extension
+ Users can now easily bookmark websites using the extension and view/manage them through the website. 
