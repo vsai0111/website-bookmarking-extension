@@ -1,5 +1,13 @@
-// popup.js
 document.addEventListener('DOMContentLoaded', function () {
+  const sendDataToWebsite = (data) => {
+    window.postMessage({ type: 'FROM_EXTENSION', data: data }, '*');
+  };
+
+  chrome.storage.sync.get('bookmarks', (data) => {
+    const bookmarks = data.bookmarks || [];
+    sendDataToWebsite(bookmarks);
+  });
+
   document.getElementById('goToSiteButton').addEventListener('click', () => {
     chrome.tabs.create({ url: 'https://www.yourwebsite.com' }); // Replace with your website URL
   });
