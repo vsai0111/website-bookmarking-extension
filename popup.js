@@ -25,22 +25,16 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // Existing code to get and display bookmarks in the popup
-  chrome.storage.sync.get('bookmarks', (data) => {
-    const bookmarks = data.bookmarks || [];
-    displayBookmarks(bookmarks);
-    sendDataToWebsite(bookmarks); // Notify the website about existing bookmarks
-  });
-
-  // Existing code for adding a bookmark in the popup
-  document.getElementById('addBookmarkButton').addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const currentTab = tabs[0];
-      const newBookmark = { title: currentTab.title, url: currentTab.url };
-      addBookmarkAndNotify(newBookmark); // Call the modified function to add and notify
+  const addBookmarkButton = document.getElementById('addBookmarkButton');
+  if (addBookmarkButton) {
+    addBookmarkButton.addEventListener('click', () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const currentTab = tabs[0];
+        const newBookmark = { title: currentTab.title, url: currentTab.url };
+        addBookmarkAndNotify(newBookmark); // Call the modified function to add and notify
+      });
     });
-  });
-
-  // Other existing code...
+  }
 
   // Listen for messages from the website
   window.addEventListener('message', function (event) {
@@ -55,4 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   });
+
+  // Other existing code...
 });
