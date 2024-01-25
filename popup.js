@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
         displayBookmarks(updatedBookmarks);
         sendDataToWebsite(updatedBookmarks); // Notify website about changes
+        alert(`Bookmark "${bookmark.title}" deleted successfully!`);
       });
     });
   };
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
         displayBookmarks(updatedBookmarks);
         sendDataToWebsite(updatedBookmarks); // Notify website about changes
+        alert(`Current tab "${tab.title}" added as bookmark successfully!`);
       });
     });
   };
@@ -65,6 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
         displayBookmarks(updatedBookmarks);
         sendDataToWebsite(updatedBookmarks); // Notify website about changes
+        alert(`Added ${tabs.length} tabs to bookmarks successfully!`);
       });
     });
   };
