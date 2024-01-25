@@ -1,5 +1,3 @@
-// Extension side code using Chrome Sync Storage for shared data synchronization
-
 // Function to add or update bookmark data in the shared storage
 const updateSharedStorage = (bookmarks) => {
   chrome.storage.sync.set({ bookmarks: bookmarks }, () => {
@@ -7,10 +5,17 @@ const updateSharedStorage = (bookmarks) => {
   });
 };
 
+// Function to retrieve bookmark data from shared storage
+const retrieveBookmarksFromStorage = (callback) => {
+  chrome.storage.sync.get('bookmarks', (data) => {
+    const bookmarks = data.bookmarks || [];
+    callback(bookmarks);
+  });
+};
+
 // Function to handle bookmark addition or update
 const addOrUpdateBookmark = (newBookmark) => {
-  chrome.storage.sync.get('bookmarks', (data) => {
-    const existingBookmarks = data.bookmarks || [];
+  retrieveBookmarksFromStorage((existingBookmarks) => {
     const updatedBookmarks = [...existingBookmarks.filter(b => b.url !== newBookmark.url), newBookmark];
     updateSharedStorage(updatedBookmarks);
   });

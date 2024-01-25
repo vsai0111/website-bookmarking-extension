@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to display bookmarks on the popup
   const displayBookmarks = (bookmarks) => {
+    // Do not display bookmarks in the popup, send them to the website instead
     sendDataToWebsite(bookmarks); // Notify website about bookmarks
   };
 
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Event listeners for button clicks
   document.getElementById('goToSiteButton').addEventListener('click', () => {
-    chrome.tabs.create({ url: 'https://www.yourwebsite.com' }); // Replace with your website URL
+    chrome.tabs.create({ url: 'https://vsai0111.github.io/Bookmarking-website/' }); // Replace with your website URL
   });
 
   document.getElementById('addCurrentButton').addEventListener('click', addCurrentBookmark);
