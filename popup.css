@@ -1,62 +1,61 @@
 /* popup.css */
 body {
-    width: 250px; /* Adjust width for a more compact size */
-    color: black;
-  }
-  
-  .popup-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 15px; /* Reduce padding for a more compact layout */
-  }
-  
-  .header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px; /* Reduce margin for a more compact layout */
-  }
-  
-  .website-logo {
-    width: 40px; /* Adjust size of the logo */
-    height: 40px; /* Adjust size of the logo */
-    margin-right: 8px; /* Adjust margin for a more compact layout */
-  }
-  
-  .extension-name {
-    font-size: 20px; /* Slightly reduce font size */
-    margin: 0;
-  }
-  
-  /* Stylish unicolor buttons */
-  .action-button {
-    width: 180px; /* Reduce button width for a more compact size */
-    padding: 8px; /* Reduce padding for a more compact layout */
-    margin-bottom: 8px; /* Reduce margin for a more compact layout */
-    border: none;
-    border-radius: 5px;
-    color: white;
-    font-size: 14px; /* Reduce font size for a more compact layout */
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  
-  /* Revert background color for all buttons */
-  .action-button {
-    background-color: #333; /* Darker color */
-  }
-  
-  .action-button:hover {
-    background-color: #444; /* Darker color on hover */
-  }
-  
-  /* Revert background color for button features to black */
-  .goToSite, .addCurrent, .addAllTabs {
-    background-color: black; /* Revert background color for features */
-  }
-  
-  .goToSite:hover, .addCurrent:hover, .addAllTabs:hover {
-    background-color: #333; /* Darker color on hover for features */
-  }
-  
+  width: 250px; /* Adjust width for a more compact size */
+  color: black;
+}
+
+.popup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px; /* Reduce padding for a more compact layout */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px; /* Reduce margin for a more compact layout */
+}
+
+.website-logo {
+  width: 40px; /* Adjust size of the logo */
+  height: 40px; /* Adjust size of the logo */
+  margin-right: 8px; /* Adjust margin for a more compact layout */
+}
+
+.extension-name {
+  font-size: 20px; /* Slightly reduce font size */
+  margin: 0;
+}
+
+/* Stylish unicolor buttons */
+.action-button {
+  width: 180px; /* Reduce button width for a more compact size */
+  padding: 8px; /* Reduce padding for a more compact layout */
+  margin-bottom: 8px; /* Reduce margin for a more compact layout */
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 14px; /* Reduce font size for a more compact layout */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Revert background color for all buttons */
+.action-button {
+  background-color: #333; /* Darker color */
+}
+
+.action-button:hover {
+  background-color: #444; /* Darker color on hover */
+}
+
+/* Revert background color for button features to black */
+.goToSite, .addCurrent, .addAllTabs {
+  background-color: black; /* Revert background color for features */
+}
+
+.goToSite:hover, .addCurrent:hover, .addAllTabs:hover {
+  background-color: #333; /* Darker color on hover for features */
+}

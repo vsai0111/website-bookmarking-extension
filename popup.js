@@ -1,25 +1,20 @@
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', async () => {
   // Function to send data to the linked website
   const sendDataToWebsite = (data) => {
     window.postMessage({ type: 'FROM_EXTENSION', data: data }, '*');
   };
 
   // Function to display bookmarks on the popup
-  const displayBookmarks = async () => {
-    try {
-      const { bookmarks } = await chrome.storage.sync.get('bookmarks');
-      const bookmarksList = document.getElementById('bookmarks-list');
-      bookmarksList.innerHTML = ''; // Clear previous bookmarks
-      bookmarks.forEach(bookmark => {
-        const bookmarkElement = createBookmarkElement(bookmark);
-        bookmarksList.appendChild(bookmarkElement);
-      });
-    } catch (error) {
-      console.error('Error displaying bookmarks:', error);
-    }
+  const displayBookmarks = (bookmarks) => {
+    const bookmarksList = document.getElementById('bookmarks-list');
+    bookmarksList.innerHTML = ''; // Clear previous bookmarks
+    bookmarks.forEach(bookmark => {
+      const bookmarkElement = createBookmarkElement(bookmark);
+      bookmarksList.appendChild(bookmarkElement);
+    });
   };
 
-  // Function to create a bookmark element
+  // Function to create bookmark element
   const createBookmarkElement = (bookmark) => {
     const bookmarkElement = document.createElement('div');
     bookmarkElement.classList.add('bookmark');
@@ -27,49 +22,80 @@ document.addEventListener('DOMContentLoaded', async function () {
       <h3>${bookmark.title}</h3>
       <p><a href="${bookmark.url}" target="_blank">${bookmark.url}</a></p>
       <div class="actions">
-        <button onclick="deleteBookmark('${bookmark.title}')">Delete</button>
+        <button class="delete-button">Delete</button>
       </div>
     `;
+    bookmarkElement.querySelector('.delete-button').addEventListener('click', () => deleteBookmark(bookmark));
     return bookmarkElement;
   };
 
-  // Function to delete a bookmark
-  const deleteBookmark = async (title) => {
-    try {
-      const { bookmarks } = await chrome.storage.sync.get('bookmarks');
-      const updatedBookmarks = bookmarks.filter(bookmark => bookmark.title !== title);
-      await chrome.storage.sync.set({ bookmarks: updatedBookmarks });
-      await displayBookmarks(); // Refresh the display after deletion
-    } catch (error) {
-      console.error('Error deleting bookmark:', error);
-    }
+  // Function to delete bookmark
+  const deleteBookmark = (bookmark) => {
+    chrome.storage.sync.get('bookmarks', (data) => {
+      const bookmarks = data.bookmarks || [];
+      const updatedBookmarks = bookmarks.filter(b => b.url !== bookmark.url);
+      chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
+        displayBookmarks(updatedBookmarks);
+        sendDataToWebsite(updatedBookmarks); // Notify website about changes
+      });
+    });
   };
 
-  // Function to handle "Go to Site" button click
-  const goToSite = () => {
-    chrome.tabs.create({ url: 'https://www.yourwebsite.com' }); // Replace with your website URL
-  };
-
-  // Function to handle "Add Bookmark" button click
-  const addBookmark = async () => {
-    try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const currentTab = tabs[0];
-      const newBookmark = { title: currentTab.title, url: currentTab.url };
-      const { bookmarks } = await chrome.storage.sync.get('bookmarks');
+  // Function to add current tab as bookmark
+  const addCurrentBookmark = async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const newBookmark = { title: tab.title, url: tab.url };
+    chrome.storage.sync.get('bookmarks', (data) => {
+      const bookmarks = data.bookmarks || [];
       const updatedBookmarks = [...bookmarks, newBookmark];
-      await chrome.storage.sync.set({ bookmarks: updatedBookmarks });
-      await displayBookmarks(); // Refresh the display after adding a new bookmark
-      alert(`Added bookmark "${newBookmark.title}" to your collection!`);
-    } catch (error) {
-      console.error('Error adding bookmark:', error);
-    }
+      chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
+        displayBookmarks(updatedBookmarks);
+        sendDataToWebsite(updatedBookmarks); // Notify website about changes
+      });
+    });
   };
 
-  // Attach event listeners
-  document.getElementById('goToSiteButton').addEventListener('click', goToSite);
-  document.getElementById('addBookmarkButton').addEventListener('click', addBookmark);
+  // Function to add all tabs as bookmarks
+  const addAllTabsAsBookmarks = async () => {
+    const tabs = await chrome.tabs.query({});
+    const newBookmarks = tabs.map(tab => ({ title: tab.title, url: tab.url }));
+    chrome.storage.sync.get('bookmarks', (data) => {
+      const bookmarks = data.bookmarks || [];
+      const updatedBookmarks = [...bookmarks, ...newBookmarks];
+      chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
+        displayBookmarks(updatedBookmarks);
+        sendDataToWebsite(updatedBookmarks); // Notify website about changes
+      });
+    });
+  };
 
-  // Display bookmarks when the popup is loaded
-  await displayBookmarks();
+  // Event listeners for button clicks
+  document.getElementById('goToSiteButton').addEventListener('click', () => {
+    chrome.tabs.create({ url: 'https://www.yourwebsite.com' }); // Replace with your website URL
+  });
+
+  document.getElementById('addCurrentButton').addEventListener('click', addCurrentBookmark);
+
+  document.getElementById('addAllTabsButton').addEventListener('click', addAllTabsAsBookmarks);
+
+  // Load and display bookmarks on popup open
+  chrome.storage.sync.get('bookmarks', (data) => {
+    const bookmarks = data.bookmarks || [];
+    displayBookmarks(bookmarks);
+    sendDataToWebsite(bookmarks); // Notify website about existing bookmarks
+  });
+
+  // Listen for messages from the website
+  window.addEventListener('message', (event) => {
+    if (event.source === window && event.data.type === 'FROM_WEBSITE') {
+      const receivedData = event.data.data;
+      if (Array.isArray(receivedData)) {
+        // Update local storage with the received data
+        chrome.storage.sync.set({ bookmarks: receivedData }, () => {
+          // Refresh the display with the updated data
+          displayBookmarks(receivedData);
+        });
+      }
+    }
+  });
 });
