@@ -6,31 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to display bookmarks on the popup
   const displayBookmarks = (bookmarks) => {
-    const bookmarksList = document.getElementById('bookmarks-list');
-    if (!bookmarksList) {
-      console.error('Bookmarks list element not found.');
-      return;
-    }
-    bookmarksList.innerHTML = ''; // Clear previous bookmarks
-    bookmarks.forEach(bookmark => {
-      const bookmarkElement = createBookmarkElement(bookmark);
-      bookmarksList.appendChild(bookmarkElement);
-    });
-  };
-
-  // Function to create bookmark element
-  const createBookmarkElement = (bookmark) => {
-    const bookmarkElement = document.createElement('div');
-    bookmarkElement.classList.add('bookmark');
-    bookmarkElement.innerHTML = `
-      <h3>${bookmark.title}</h3>
-      <p><a href="${bookmark.url}" target="_blank">${bookmark.url}</a></p>
-      <div class="actions">
-        <button class="delete-button">Delete</button>
-      </div>
-    `;
-    bookmarkElement.querySelector('.delete-button').addEventListener('click', () => deleteBookmark(bookmark));
-    return bookmarkElement;
+    sendDataToWebsite(bookmarks); // Notify website about bookmarks
   };
 
   // Function to delete bookmark
@@ -39,7 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const bookmarks = data.bookmarks || [];
       const updatedBookmarks = bookmarks.filter(b => b.url !== bookmark.url);
       chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
-        displayBookmarks(updatedBookmarks);
         sendDataToWebsite(updatedBookmarks); // Notify website about changes
         alert(`Bookmark "${bookmark.title}" deleted successfully!`);
       });
@@ -48,45 +23,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to add current tab as bookmark
   const addCurrentBookmark = async () => {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true }).catch(error => {
-      console.error('Error querying tabs:', error);
-    });
-    if (!tabs || tabs.length === 0) {
-      console.error('No active tab found.');
-      return;
-    }
-    const tab = tabs[0];
-    const newBookmark = { title: tab.title, url: tab.url };
-    chrome.storage.sync.get('bookmarks', (data) => {
-      const bookmarks = data.bookmarks || [];
-      const updatedBookmarks = [...bookmarks, newBookmark];
-      chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
-        displayBookmarks(updatedBookmarks);
-        sendDataToWebsite(updatedBookmarks); // Notify website about changes
-        alert(`Current tab "${tab.title}" added as bookmark successfully!`);
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab) {
+        console.error('No active tab found.');
+        return;
+      }
+      const newBookmark = { title: tab.title, url: tab.url };
+      chrome.storage.sync.get('bookmarks', (data) => {
+        const bookmarks = data.bookmarks || [];
+        const updatedBookmarks = [...bookmarks, newBookmark];
+        chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
+          sendDataToWebsite(updatedBookmarks); // Notify website about changes
+          alert(`Current tab "${tab.title}" added as bookmark successfully!`);
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error adding current tab as bookmark:', error);
+    }
   };
 
   // Function to add all tabs as bookmarks
   const addAllTabsAsBookmarks = async () => {
-    const tabs = await chrome.tabs.query({}).catch(error => {
-      console.error('Error querying tabs:', error);
-    });
-    if (!tabs || tabs.length === 0) {
-      console.error('No tabs found.');
-      return;
-    }
-    const newBookmarks = tabs.map(tab => ({ title: tab.title, url: tab.url }));
-    chrome.storage.sync.get('bookmarks', (data) => {
-      const bookmarks = data.bookmarks || [];
-      const updatedBookmarks = [...bookmarks, ...newBookmarks];
-      chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
-        displayBookmarks(updatedBookmarks);
-        sendDataToWebsite(updatedBookmarks); // Notify website about changes
-        alert(`Added ${tabs.length} tabs to bookmarks successfully!`);
+    try {
+      const tabs = await chrome.tabs.query({});
+      if (!tabs || tabs.length === 0) {
+        console.error('No tabs found.');
+        return;
+      }
+      const newBookmarks = tabs.map(tab => ({ title: tab.title, url: tab.url }));
+      chrome.storage.sync.get('bookmarks', (data) => {
+        const bookmarks = data.bookmarks || [];
+        const updatedBookmarks = [...bookmarks, ...newBookmarks];
+        chrome.storage.sync.set({ bookmarks: updatedBookmarks }, () => {
+          sendDataToWebsite(updatedBookmarks); // Notify website about changes
+          alert(`Added ${tabs.length} tabs to bookmarks successfully!`);
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error adding all tabs as bookmarks:', error);
+    }
   };
 
   // Event listeners for button clicks
@@ -102,7 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   chrome.storage.sync.get('bookmarks', (data) => {
     const bookmarks = data.bookmarks || [];
     displayBookmarks(bookmarks);
-    sendDataToWebsite(bookmarks); // Notify website about existing bookmarks
   });
 
   // Listen for messages from the website
@@ -111,10 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const receivedData = event.data.data;
       if (Array.isArray(receivedData)) {
         // Update local storage with the received data
-        chrome.storage.sync.set({ bookmarks: receivedData }, () => {
-          // Refresh the display with the updated data
-          displayBookmarks(receivedData);
-        });
+        chrome.storage.sync.set({ bookmarks: receivedData });
       }
     }
   });
