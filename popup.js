@@ -48,7 +48,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to add current tab as bookmark
   const addCurrentBookmark = async () => {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true }).catch(error => {
+      console.error('Error querying tabs:', error);
+    });
     if (!tabs || tabs.length === 0) {
       console.error('No active tab found.');
       return;
@@ -68,7 +70,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to add all tabs as bookmarks
   const addAllTabsAsBookmarks = async () => {
-    const tabs = await chrome.tabs.query({});
+    const tabs = await chrome.tabs.query({}).catch(error => {
+      console.error('Error querying tabs:', error);
+    });
     if (!tabs || tabs.length === 0) {
       console.error('No tabs found.');
       return;
