@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Function to display bookmarks on the popup
   const displayBookmarks = (bookmarks) => {
     const bookmarksList = document.getElementById('bookmarks-list');
+    if (!bookmarksList) {
+      console.error('Bookmarks list element not found.');
+      return;
+    }
     bookmarksList.innerHTML = ''; // Clear previous bookmarks
     bookmarks.forEach(bookmark => {
       const bookmarkElement = createBookmarkElement(bookmark);
@@ -44,7 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to add current tab as bookmark
   const addCurrentBookmark = async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tabs || tabs.length === 0) {
+      console.error('No active tab found.');
+      return;
+    }
+    const tab = tabs[0];
     const newBookmark = { title: tab.title, url: tab.url };
     chrome.storage.sync.get('bookmarks', (data) => {
       const bookmarks = data.bookmarks || [];
@@ -60,6 +69,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Function to add all tabs as bookmarks
   const addAllTabsAsBookmarks = async () => {
     const tabs = await chrome.tabs.query({});
+    if (!tabs || tabs.length === 0) {
+      console.error('No tabs found.');
+      return;
+    }
     const newBookmarks = tabs.map(tab => ({ title: tab.title, url: tab.url }));
     chrome.storage.sync.get('bookmarks', (data) => {
       const bookmarks = data.bookmarks || [];
